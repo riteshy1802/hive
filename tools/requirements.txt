@@ -9,5 +9,6 @@ lxml
 playwright
 playwright-stealth
 requests
+resend
 
 # Note: After installing, run `playwright install` to download browser binaries
