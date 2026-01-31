@@ -174,9 +174,9 @@ echo ""
 echo -e "${DIM}This may take a minute...${NC}"
 echo ""
 
-# Upgrade pip, setuptools, and wheel
+# Upgrade pip, setuptools, and wheel (skip on externally-managed systems)
 echo -n "  Upgrading pip... "
-$PYTHON_CMD -m pip install --upgrade pip setuptools wheel > /dev/null 2>&1
+$PYTHON_CMD -m pip install --upgrade pip setuptools wheel > /dev/null 2>&1 || true
 echo -e "${GREEN}ok${NC}"
 
 # Install framework package from core/
@@ -212,20 +212,8 @@ else
     exit 1
 fi
 
-# Install MCP dependencies
-echo -n "  Installing MCP... "
-$PYTHON_CMD -m pip install mcp fastmcp > /dev/null 2>&1
-echo -e "${GREEN}ok${NC}"
-
-# Fix openai version compatibility
-echo -n "  Checking openai... "
-$PYTHON_CMD -m pip install "openai>=1.0.0" > /dev/null 2>&1
-echo -e "${GREEN}ok${NC}"
-
-# Install click for CLI
-echo -n "  Installing CLI tools... "
-$PYTHON_CMD -m pip install click > /dev/null 2>&1
-echo -e "${GREEN}ok${NC}"
+# Note: MCP, openai, click, and other dependencies are installed via uv sync
+# from pyproject.toml in core/ and tools/ directories
 
 # Install Playwright browser
 echo -n "  Installing Playwright browser... "
@@ -593,9 +581,9 @@ echo ""
 
 ERRORS=0
 
-# Test imports
+# Test imports (using venv Python)
 echo -n "  ⬡ framework... "
-if $PYTHON_CMD -c "import framework" > /dev/null 2>&1; then
+if [ -f "$SCRIPT_DIR/core/.venv/bin/python" ] && "$SCRIPT_DIR/core/.venv/bin/python" -c "import framework" > /dev/null 2>&1; then
     echo -e "${GREEN}ok${NC}"
 else
     echo -e "${RED}failed${NC}"
@@ -603,7 +591,7 @@ else
 fi
 
 echo -n "  ⬡ aden_tools... "
-if $PYTHON_CMD -c "import aden_tools" > /dev/null 2>&1; then
+if [ -f "$SCRIPT_DIR/tools/.venv/bin/python" ] && "$SCRIPT_DIR/tools/.venv/bin/python" -c "import aden_tools" > /dev/null 2>&1; then
     echo -e "${GREEN}ok${NC}"
 else
     echo -e "${RED}failed${NC}"
@@ -611,7 +599,7 @@ else
 fi
 
 echo -n "  ⬡ litellm... "
-if $PYTHON_CMD -c "import litellm" > /dev/null 2>&1; then
+if [ -f "$SCRIPT_DIR/core/.venv/bin/python" ] && "$SCRIPT_DIR/core/.venv/bin/python" -c "import litellm" > /dev/null 2>&1; then
     echo -e "${GREEN}ok${NC}"
 else
     echo -e "${YELLOW}--${NC}"
